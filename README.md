@@ -307,6 +307,6 @@ Released under the [MIT License](LICENSE). See `LICENSE` for details.
 **Dark Scorpions** · Team ID `VTU-QFF-HC-0015` · Tier `Both`
 · Built with ⚛️ Qiskit for the VTU-QFF Hackathon
 
-[⬆ Back to Top](#Dark Scorpions)
+[⬆ Back to Top](#dark-scorpions)
 
 </div>
