@@ -46,9 +46,9 @@
 
 | # | Name | GitHub Username | Role |
 | :-- | :--- | :--- | :--- |
-| 1 |Aditya B Koparde | [_your-github-userna(https://github.com/AdityaKoparde) | _Team Lead_ |
-| 2 | _Add your name_ | [_your-github-username_](https://github.com/Jeswin2008-arc) | _Developer_ |
-| 3 | _Add your name_ | [_your-github-username_](https://github.com/kadamtejas407-lang) | _Developer_ |
+| 1 |Aditya B Koparde | [Aditya B Koparde](https://github.com/AdityaKoparde) | _Team Lead_ |
+| 2 | Jeswin J Lazarus | [Jeswin J Lazarus_](https://github.com/Jeswin2008-arc) | _Developer_ |
+| 3 | Tejas Vithal Kadam | [Tejas Vithal Kadam](https://github.com/kadamtejas407-lang) | _Developer_ |
 
 ---
 
@@ -84,14 +84,17 @@ Walk through how it works. A simple pipeline diagram in text or Mermaid is ideal
 -->
 
 ```mermaid
-flowchart LR
-    A[User selects graph size n & QAOA layers p] --> B[Build complete graph K_n]
-    B --> C1[Classical: Enumerate all 2^n partitions]
-    B --> C2[Quantum: Build cost Hamiltonian H = Σ 0.5·Z_i·Z_j]
-    C1 --> D1[Score each partition: count cut edges]
-    C2 --> D2[QAOA: H gates → Cost layer (CX, RZ) → Mixer layer (RX) → Measure]
-    D1 --> E[Side-by-side comparison: cut value, time, partition]
-    D2 --> E   
+flowchart TD
+    A["User selects graph size n and QAOA layers p"] --> B["Build complete graph K_n"]
+
+    B --> C1["Classical: Enumerate all 2^n bitstrings"]
+    B --> C2["Quantum: Build cost Hamiltonian H = sum of 0.5(1 - Z_i Z_j)"]
+
+    C1 --> D1["Score each partition: count cut edges"]
+    C2 --> D2["QAOA: H gates -> Cost layer (CX, RZ) -> Mixer layer (RX) -> Measure"]
+
+    D1 --> E["Side-by-side comparison: cut value, time, partition"]
+    D2 --> E
 ```
 
 1. **Input** — User selects number of nodes (2–8) and QAOA layers p (1–5) via Streamlit sliders. The app constructs a complete graph Kₙ using NetworkX.
