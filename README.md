@@ -46,31 +46,19 @@
 
 | # | Name | GitHub Username | Role |
 | :-- | :--- | :--- | :--- |
-| 1 | _Add your name_ | _your-github-username_ | _Team Lead_ |
-| 2 | _Add your name_ | _your-github-username_ | _Developer_ |
-| 3 | _Add your name_ | _your-github-username_ | _Developer_ |
-
-<!--
-Optional: add a plain list instead of the table above.
-- @username1
-- @username2
--->
+| 1 |Aditya B Koparde | [_your-github-userna(https://github.com/AdityaKoparde) | _Team Lead_ |
+| 2 | _Add your name_ | [_your-github-username_](https://github.com/Jeswin2008-arc) | _Developer_ |
+| 3 | _Add your name_ | [_your-github-username_](https://github.com/kadamtejas407-lang) | _Developer_ |
 
 ---
 
 ## ❓ Problem Statement
 
-<!--
-State the problem you are solving. Be specific: what is broken or missing,
-who experiences it, and why does it matter. Link to the official problem
-statement from the brief if one applies.
--->
+**Problem:** Students and small research teams lack an accessible, beginner-friendly way to test small optimisation problems using quantum computing, compare the results with classical algorithms, and understand the trade-offs in solution quality, execution time, and hardware noise. Most QAOA tutorials assume prior knowledge of Hamiltonians, variational circuits, and optimisation theory — leaving newcomers with no intuitive, interactive way to see when quantum offers an advantage.
 
-**Problem:** _Describe the problem in 2–3 sentences._
+**Why it matters:** Quantum computing is often presented as a black box — "it's faster, trust us." Without a hands-on comparison tool, students can't build genuine intuition about where quantum algorithms shine and where classical methods still win. This gap slows down adoption in academic settings and makes it harder for new researchers to decide whether quantum approaches are worth pursuing for their specific problem size. An interactive lab that shows both answers side-by-side in seconds bridges that gap.
 
-**Why it matters:** _Explain the impact or opportunity._
-
-**Track / Category:** _Online / Offline · Track 1 / Track 2 · <domain>_
+**Track / Category:** Online · Track 5 · Quantum Cloud-Based Applications
 
 ---
 
@@ -81,11 +69,11 @@ Describe your solution. Keep it concrete: the core idea, the user flow, and
 the quantum/ML technique you are applying.
 -->
 
-**Solution:** _In 2–3 sentences, describe what you built._
+**Solution:** We built a cloud-based interactive Streamlit web application that accepts a small network graph (2–8 nodes), solves the MaxCut optimisation problem using both a classical brute-force algorithm and the Quantum Approximate Optimization Algorithm (QAOA) via Qiskit, and presents a side-by-side comparison of solution quality, execution time, and method details with visual evidence (bar charts, timing metrics, and partition visualisations).
 
-**Key idea:** _The one-line technical summary of your approach._
+**Key idea:** Encode MaxCut as a cost Hamiltonian (sum of Z⊗Z terms over edges), run QAOA with a tunable number of layers (p) on the Qiskit Aer simulator, and directly compare the resulting cut value and wall-clock time against exhaustive classical search — giving users an instant, visual understanding of the quantum-vs-classical trade-off at different problem sizes.
 
-**Why this works:** _How your approach addresses the problem statement._
+**Why this works:** By letting the user control graph size and QAOA layers interactively, the app makes the exponential growth of classical brute force (2ⁿ trials) tangible against QAOA's polynomial scaling. The side-by-side output removes the "black box" perception — students see exactly when quantum matches classical accuracy, when it falls short (sub-optimal convergence at low p), and how execution time shifts as the problem grows. This turns a 40-page textbook explanation into a 10-second click.
 
 ---
 
@@ -97,28 +85,32 @@ Walk through how it works. A simple pipeline diagram in text or Mermaid is ideal
 
 ```mermaid
 flowchart LR
-    A[Input Data] --> B[Preprocessing]
-    B --> C[Quantum Circuit / Model]
-    C --> D[Post-processing]
-    D --> E[Output]
+    A[User selects graph size n & QAOA layers p] --> B[Build complete graph K_n]
+    B --> C1[Classical: Enumerate all 2^n partitions]
+    B --> C2[Quantum: Build cost Hamiltonian H = Σ 0.5·Z_i·Z_j]
+    C1 --> D1[Score each partition: count cut edges]
+    C2 --> D2[QAOA: H gates → Cost layer (CX, RZ) → Mixer layer (RX) → Measure]
+    D1 --> E[Side-by-side comparison: cut value, time, partition]
+    D2 --> E   
 ```
 
-1. **Input** — _what data goes in and in what format_
-2. **Preprocessing** — _cleaning, feature extraction, encoding_
-3. **Quantum core** — _the circuit, ansatz, or algorithm used_
-4. **Post-processing** — _decoding, measurement, scoring_
-5. **Output** — _what the user finally gets_
-
+1. **Input** — User selects number of nodes (2–8) and QAOA layers p (1–5) via Streamlit sliders. The app constructs a complete graph Kₙ using NetworkX.
+2. **Preprocessing** — The graph's edge list is extracted. For the quantum path, a cost Hamiltonian is built as a SparsePauliOp: one +0.5·Z_i·Z_j term per edge. For the classical path, all 2ⁿ bitmasks are generated.
+3. **Quantum core** — QAOA circuit with p layers: (a) Hadamard initialization on all qubits, (b) cost unitary: CNOT → RZ(2γ) → CNOT per edge, (c) mixer unitary: RX(2β) per qubit. A classical COBYLA optimizer tunes angles (γ, β) to minimize expected energy. Runs on StatevectorSampler (Qiskit Aer).
+4. **Post-processing** — The eigenstate with highest probability is extracted as the optimal bitstring. Energy is converted back to cut value: cut = n_edges/2 − energy. Classical path simply picks the bitmask with maximum cut count. Both are timed with time.time().
+5. **Output** — A side-by-side comparison showing: best cut value, node partition, wall-clock time, and method details (trials vs layers). A bar chart visualises the cut values. A verdict message confirms whether both methods agree.
 ---
 
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
 | :--- | :--- |
-| Language | Python 3.11+ |
-| Quantum SDK | Qiskit `>=1.0`, Qiskit Aer, Qiskit Runtime |
-| Optimisation | Qiskit Optimization / COBYLA / SPSA |
-| Simulation | AerSimulator (statevector / noisemodel) |
+| Language | Python 3.12 |
+| Quantum SDK | Qiskit ≥1.0, Qiskit Aer, Qiskit Algorithms |
+| Optimisation | COBYLA (via qiskit_algorithms.optimizers) |
+| Simulation | StatevectorSampler (Qiskit Aer, statevector mode) |
+| Web Framework |	Streamlit |
+| Graph Library |	NetworkX |
 | Environment | JupyterLab / VS Code, `venv` |
 | Version control | Git + GitHub |
 
@@ -205,8 +197,8 @@ pytest -q
 ### Configure Git (first time only)
 
 ```bash
-git config --global user.name  "Your Name"
-git config --global user.email "you@example.com"
+git config --global user.name  "AdityaKoparde"
+git config --global user.email "adityakoparde001@gmail.com"
 ```
 
 ### Everyday workflow
