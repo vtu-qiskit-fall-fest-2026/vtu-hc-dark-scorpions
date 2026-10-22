@@ -109,11 +109,10 @@ flowchart LR
 
 ```text
 vtu-hc-dark-scorpions/
-├── app.py                  # 3D landing page (Three.js + GSAP)
+├── main-site.py                  # 3D landing page (Three.js + GSAP)
 ├── pages/
 │   └── 1_Quantum_Lab.py    # QAOA vs Classical solver (Streamlit)
 ├── src/
-│   ├── __init__.py
 │   ├── circuit.py          # Manual QAOA circuit builder (educational)
 │   ├── optimizer.py        # QAOA + COBYLA via MinimumEigenOptimizer
 │   ├── classical.py        # Brute-force MaxCut (ground truth)
