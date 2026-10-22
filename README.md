@@ -46,68 +46,47 @@
 
 | # | Name | GitHub Username | Role |
 | :-- | :--- | :--- | :--- |
-| 1 | _Add your name_ | _your-github-username_ | _Team Lead_ |
-| 2 | _Add your name_ | _your-github-username_ | _Developer_ |
-| 3 | _Add your name_ | _your-github-username_ | _Developer_ |
-
-<!--
-Optional: add a plain list instead of the table above.
-- @username1
-- @username2
--->
+| 1 | Aditya B Koparde | [AdityaKoparde](https://github.com/adityakoparde) | _Team Lead_ |
+| 2 | Jeswin J Lazarus | [Jeswin2008-arc](https://github.com/Jeswin2008-arc) | _Developer_ |
+| 3 | Tejas Vithal Kadam | [kadamtejas407-lang](https://github.com/kadamtejas407-lang) | _Developer_ |
 
 ---
 
 ## ❓ Problem Statement
 
-<!--
-State the problem you are solving. Be specific: what is broken or missing,
-who experiences it, and why does it matter. Link to the official problem
-statement from the brief if one applies.
--->
+**Problem:** Current Qiskit tutorials are notebook-based, static, and disconnected from real-world context. There is no beginner-friendly web app that lets a user pick a real industry scenario, solve it quantumly, and immediately see how it compares to the classical answer.
 
-**Problem:** _Describe the problem in 2–3 sentences._
+**Why it matters:** QAOA is a hybrid quantum-classical variational algorithm. The quantum part (parameterised circuit) encodes the graph structure into a superposition of all possible cuts; the classical part (COBYLA optimiser) iteratively adjusts the circuit angles (γ, β) to push probability amplitude toward the optimal cut. More layers (p) = more refinement = closer to optimal.
 
-**Why it matters:** _Explain the impact or opportunity._
-
-**Track / Category:** _Online / Offline · Track 1 / Track 2 · <domain>_
+**Track / Category:** Online · Track 5 · Quantum Cloud-Based Applications
 
 ---
 
 ## 💡 Proposed Solution
 
-<!--
-Describe your solution. Keep it concrete: the core idea, the user flow, and
-the quantum/ML technique you are applying.
--->
+**Solution:** We built a cloud-based interactive Streamlit lab that accepts a small network optimisation problem (MaxCut) across 5 real-world scenarios (VLSI, social networks, data centers, logistics, finance), solves it using both a classical brute-force algorithm and QAOA on the Qiskit Aer simulator, and presents a side-by-side comparison with visual evidence (bar charts, timing data, approximation ratio).
 
-**Solution:** _In 2–3 sentences, describe what you built._
+**Key idea:** Dark Scorpions built a cloud-based Streamlit lab that solves MaxCut (a real-world NP-hard network partitioning problem) using QAOA on Qiskit and classical brute force side-by-side across 5 industry scenarios, with visual comparison proving QAOA's polynomial scaling advantage over 2ⁿ search.
 
-**Key idea:** _The one-line technical summary of your approach._
-
-**Why this works:** _How your approach addresses the problem statement._
+**Why this works:** We built a cloud-based Streamlit lab where a user picks a real-world scenario, clicks Solve, and instantly sees QAOA and brute-force results side-by-side with timing, cut values, and approximation ratio — making the quantum-vs-classical trade-off tangible without any quantum theory prerequisite.
 
 ---
 
 ## 🧩 Approach & Architecture
 
-<!--
-Walk through how it works. A simple pipeline diagram in text or Mermaid is ideal.
--->
-
 ```mermaid
 flowchart LR
-    A[Input Data] --> B[Preprocessing]
-    B --> C[Quantum Circuit / Model]
-    C --> D[Post-processing]
-    D --> E[Output]
+    A["NetworkX Graph<br/>(5 scenarios)"] --> B["MaxCut → QUBO<br/>(QuadraticProgram)"]
+    B --> C["QAOA Circuit<br/>(H + p×[Cost+Mixer])<br/>+ COBYLA Optimiser"]
+    C --> D["Bitstring → Cut Count<br/>(edge crossing check)"]
+    D --> E["Side-by-side Table<br/>+ Bar Chart + Verdict"]   
 ```
 
-1. **Input** — _what data goes in and in what format_
-2. **Preprocessing** — _cleaning, feature extraction, encoding_
-3. **Quantum core** — _the circuit, ansatz, or algorithm used_
-4. **Post-processing** — _decoding, measurement, scoring_
-5. **Output** — _what the user finally gets_
+1. **Input** — A NetworkX graph (3–6 nodes) generated from one of 5 real-world scenarios (VLSI, social, data center, logistics, finance). Format: nx.Graph with unweighted edges.
+2. **Preprocessing** — MaxCut(G).to_quadratic_program() converts the graph into a QUBO (QuadraticProgram) where each edge (u,v) becomes a −0.5·x_u·x_v term. The MinimumEigenOptimizer then translates this into a SparsePauliOp Hamiltonian for QAOA.
+3. **Quantum core** — QAOA ansatz: H on all qubits → p rounds of [CX-RZ(2γ)-CX per edge] (cost layer) + [RX(2β) per qubit] (mixer layer). StatevectorSampler evaluates the circuit; COBYLA (maxiter=200) iteratively minimises the expected energy over 2p continuous angles.
+4. **Post-processing** — result.x gives the optimal bitstring. Cut value = count of edges where bit[u] ≠ bit[v]. Energy (result.fval) reported alongside. Classical brute force (enumerate all 2ⁿ partitions) runs in parallel as ground truth.
+5. **Output** —Interactive Streamlit page showing: graph visualisation, side-by-side metrics table (cut value, time, method, correctness), bar chart comparison, and a verdict banner
 
 ---
 
@@ -115,10 +94,12 @@ flowchart LR
 
 | Layer | Technology |
 | :--- | :--- |
-| Language | Python 3.11+ |
-| Quantum SDK | Qiskit `>=1.0`, Qiskit Aer, Qiskit Runtime |
-| Optimisation | Qiskit Optimization / COBYLA / SPSA |
-| Simulation | AerSimulator (statevector / noisemodel) |
+| Language | Python 3.12 |
+| Quantum SDK | Qiskit >=2.0, Qiskit Aer, Qiskit Algorithms, Qiskit Optimization |
+| Optimisation | Qiskit Optimization COBYLA (via qiskit_algorithms.optimizers) |
+| Simulation | StatevectorSampler (exact, zero-noise) |
+| UI/Frontend |	Streamlit >=1.30 + Three.js + GSAP |
+| Graph/Math | NetworkX >=3.0, NumPy, Matplotlib, SciPy |
 | Environment | JupyterLab / VS Code, `venv` |
 | Version control | Git + GitHub |
 
@@ -128,21 +109,20 @@ flowchart LR
 
 ```text
 vtu-hc-dark-scorpions/
-├── README.md              # This file
-├── requirements.txt       # Python dependencies
-├── pyproject.toml         # Project metadata (optional)
-├── .gitignore
-├── notebooks/             # Jupyter notebooks for experiments
-│   └── exploration.ipynb
+├── app.py                  # 3D landing page (Three.js + GSAP)
+├── pages/
+│   └── 1_Quantum_Lab.py    # QAOA vs Classical solver (Streamlit)
 ├── src/
 │   ├── __init__.py
-│   ├── circuit.py         # Quantum circuit construction
-│   ├── optimizer.py       # Optimization loop
-│   └── main.py            # Entry point
-├── data/                  # Datasets (use Git LFS for large files)
-├── tests/                 # Unit tests
-│   └── test_circuit.py
-└── docs/                  # Notes, diagrams, reports
+│   ├── circuit.py          # Manual QAOA circuit builder (educational)
+│   ├── optimizer.py        # QAOA + COBYLA via MinimumEigenOptimizer
+│   ├── classical.py        # Brute-force MaxCut (ground truth)
+│   └── main.py             # CLI orchestrator (no UI needed)
+├── notebooks/
+│   └── exploration.ipynb   # Prototyping, density sweeps, plots
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
 ---
@@ -205,8 +185,8 @@ pytest -q
 ### Configure Git (first time only)
 
 ```bash
-git config --global user.name  "Your Name"
-git config --global user.email "you@example.com"
+git config --global user.name  "Aditya B Koparde"
+git config --global user.email "adityakoparde001@gmail.com"
 ```
 
 ### Everyday workflow
